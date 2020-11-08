@@ -44,5 +44,5 @@ Time allocation:
   - project setup: 30 minutes
   - Login component: 1 hour
   - PetsDashboard component: 30 minutes
-  - PetDetais modal: 30 minutes
+  - PetDetails modal: 30 minutes
   - UI/UX cleanup: 30 minutes

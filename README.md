@@ -1,70 +1,48 @@
-# Getting Started with Create React App
+# Blue host pet site using "Create React App"
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+For the take home exercise, I have developed the following in the required three hour time frame:
+  - a functional react app
+  - a login page
+  - a pets dashboard
+  - a link for each page that displays a modal of their details
+  - a page header consistent for the whole site that displays the user's username once authenticated
 
-## Available Scripts
-
-In the project directory, you can run:
-
-### `npm start`
-
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
-
-The page will reload if you make edits.\
-You will also see any lint errors in the console.
-
-### `npm test`
-
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
-
-### `npm run build`
-
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
-
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
-
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
-
-### `npm run eject`
-
-**Note: this is a one-way operation. Once you `eject`, you can’t go back!**
-
-If you aren’t satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
-
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you’re on your own.
-
-You don’t have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn’t feel obligated to use this feature. However we understand that this tool wouldn’t be useful if you couldn’t customize it when you are ready for it.
-
-## Learn More
-
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
-
-To learn React, check out the [React documentation](https://reactjs.org/).
-
-### Code Splitting
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
-
-### Analyzing the Bundle Size
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
-
-### Making a Progressive Web App
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
-
-### Advanced Configuration
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
-
-### Deployment
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
-
-### `npm run build` fails to minify
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+Some quirky things about whats going on right now with the site:
+  - nothing was actually coded to reflect connecting the api/endpoints due to not getting clarification in time about how that should be handled.  But the data is modeled in a similar way that would be easy to finish coding in the api.
+  - user authentication is not really done correctly for production obviously.  All it takes is a username and password that are at least one character long and will authenticate from there.
+  - data done in the dashboard is hard coded data.  This means its the same dogs for any user.
+  
+Aspects of the project that I didn't finish:
+  - potentially coding for api? Not sure what was required for that.
+  - ability to add new dog
+  - ability to edit existing dog
+  - using "Hello, {first name}", I forgot about using "Hello" mainly because I got carried away coding and didn't come back to check the requirements on that.
+  
+What I would do given more time:
+  - login could be a bit more secure.  Right now it stores username and password in state.  We really don't want to store that password.  There would also be code to send this info to the server to authenticate (via api).
+  - ability to add new dog and edit existing dog would probably be built in to the pop up modal.  This data would also be synced with a database.  This would also be changed so that pet information is grouped by user instead of the same pet data for any user.
+  - unit/integration testing
+  - redux would also be built in to help with state management
+  - "Create React App" was used for ease of project creation.  I would probably created a project through express.js instead.
+  
+How to test the app:
+  - make sure you have at least Node.js >= 8.10 and npm >= 5.6
+  - get the project from github and in the terminal you should change your directory to wherever you have this project at
+  - run "npm install" in terminal, this will install all dependencies
+  - run "npm start" in terminal, this will pop up the site through the local host.
+  - now you can test the views.
+  
+Technologies used:
+  - React
+  - Javascript
+  - HTML
+  - CSS
+  - Material UI 
+  - Json
+  
+Time allocation:
+  - project setup: 30 minutes
+  - Login component: 1 hour
+  - PetsDashboard component: 30 minutes
+  - PetDetais modal: 30 minutes
+  - UI/UX cleanup: 30 minutes

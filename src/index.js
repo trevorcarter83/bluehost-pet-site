@@ -1,13 +1,16 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 import './index.css';
-import App from './App';
-import reportWebVitals from './reportWebVitals';
+import App from './App/App.js';
+import reportWebVitals from './common/reportWebVitals.js';
+import { Router, Route } from 'react-router';
+import {createBrowserHistory} from 'history';
 
 ReactDOM.render(
-  <React.StrictMode>
-    <App />
-  </React.StrictMode>,
+  <Router history={createBrowserHistory()}>
+    <Route path='/' component={App}>
+    </Route>
+  </Router>,
   document.getElementById('root')
 );
 

@@ -12,28 +12,67 @@ import TableContainer from '@material-ui/core/TableContainer';
 import TableHead from '@material-ui/core/TableHead';
 import TableRow from '@material-ui/core/TableRow';
 import Paper from '@material-ui/core/Paper';
+import TextField from '@material-ui/core/TextField';
 
-  const rows = [
-    { id: 1, name: 'Snow', breed: 'Husky', weight: 75, height: 300 ,color: 'white', id2: 1 },
-    { id: 2, name: 'Maya', breed: 'Retriever', weight: 40, height: 400 ,color: 'gold', id2: 2 },
-    { id: 3, name: 'Joey', breed: 'Beagle', weight: 50, height: 500 ,color: 'brown', id2: 3 }
-  ];
+//   const rows = [
+//     { id: 1, name: 'Snow', breed: 'Husky', weight: 75, height: 300 ,color: 'white', id2: 1 },
+//     { id: 2, name: 'Maya', breed: 'Retriever', weight: 40, height: 400 ,color: 'gold', id2: 2 },
+//     { id: 3, name: 'Joey', breed: 'Beagle', weight: 50, height: 500 ,color: 'brown', id2: 3 }
+//   ];
 
 class PetsDashboard extends React.Component {
     constructor(props){
         super(props);
         this.state = {
-            doggos: rows,
+            doggos: this.petsDashboardRead(),
             showModal: false,
-            modalDog: rows.filter(x => x.id === 1)[0]
+            modalDogID: 0,
+            modalDogName: '',
+            modalDogBreed: '',
+            modalDogWeight: 0,
+            modalDogHeight: 0,
+            modalDogColor: '',
         }
     }
     displayPetDetails = (event,petID) => {
         event.preventDefault();
+        let displayDog = this.state.doggos.filter(x => x.id === petID)[0];
         this.setState({
             showModal: true,
-            modalDog: this.state.doggos.filter(x => x.id === petID)[0]
+            modalDogID: displayDog.id,
+            modalDogName: displayDog.name,
+            modalDogBreed: displayDog.breed,
+            modalDogWeight: displayDog.weight,
+            modalDogHeight: displayDog.height,
+            modalDogColor: displayDog.color
         });
+    }
+    modalPrepareAddDog = () => {
+        this.setState({
+            showModal: true,
+            modalDogID: 0,
+            modalDogName: '',
+            modalDogBreed: '',
+            modalDogWeight: 0,
+            modalDogHeight: 0,
+            modalDogColor: ''
+        });
+    }
+    petsDashboardRead = () => {
+        debugger
+        let allDogs = [];
+        var objectStore = this.props.db.transaction("dogs").objectStore("dogs");
+        objectStore.openCursor().onsuccess = function(event) {
+            var cursor = event.target.result;
+            if (cursor) {
+              allDogs.push(cursor.value);
+              cursor.continue();
+            }
+            else {
+              console.log("Got all dogs: " + allDogs);
+            }
+          };
+        return allDogs;
     }
     handleClose = (e) => {
         e.preventDefault();
@@ -41,7 +80,89 @@ class PetsDashboard extends React.Component {
             showModal: false
         });
     }
+    getIncrementedDogID = () => {
+        if(this.state.doggos.length > 0){
+            return Math.max.apply(Math, this.state.doggos.map(function(obj) { return obj.id; })) + 1;
+        }
+        else{
+            return 1;
+        }            
+    }
+    saveDoggo = () => {
+        if(this.state.modalDogID == 0){
+            this.addDog();
+        }
+        else{
+            this.updateDog();
+        }
+    }
+    addDog = () => {
+        let newID = this.getIncrementedDogID();
+        let newDog = {id: newID, 
+                    name: this.state.modalDogName, 
+                    breed: this.state.modalDogBreed, 
+                    weight: this.state.modalDogWeight, 
+                    height: this.state.modalDogHeight,
+                    color: this.state.modalDogColor, 
+                    id2: newID}
+        var transaction = this.props.db.transaction(["dogs"], "readwrite");
+        transaction.oncomplete = function(event) {                
+            this.setState({
+                doggos: [...this.state.doggos].push(newDog)
+            })
+            console.log("Dog has been added.");
+        };            
+        transaction.onerror = function(event) {
+            console.log(event.target.result);
+        };              
+        var objectStore = transaction.objectStore("dogs");            
+        objectStore.add(newDog);
+    }
+    updateDog = () => {
+        let updatedDog = {id: this.state.modalDogID, 
+                        name: this.state.modalDogName, 
+                        breed: this.state.modalDogBreed, 
+                        weight: this.state.modalDogWeight, 
+                        height: this.state.modalDogHeight,
+                        color: this.state.modalDogColor, 
+                        id2: this.state.modalDogID}
+        var objectStore = this.props.db.transaction(["dogs"], "readwrite").objectStore("dogs");
+        var request = objectStore.put(updatedDog);
+        request.onerror = function(event) {
+            console.log("Dog update failed.");
+        };
+        request.onsuccess = function(event) {
+            console.log("Dog updated.");                
+            let changedDoggos = [...this.state.doggos];
+            let dogIndex = changedDoggos.map(function(e) {return e.id}).indexOf(updatedDog.id);
+            changedDoggos[dogIndex] = updatedDog;
+            this.setState({
+                doggos: changedDoggos
+            });
+        };
+    }
+    handleNameChange = (event) => {
+        this.setState({ modalDogName: event.target.value });
+    }
+    handleBreedChange = (event) => {
+        this.setState({ modalDogBreed: event.target.value });
+    }
+    handleWeightChange = (event) => {
+        this.setState({ modalDogWeight: event.target.value });
+    }
+    handleHeightChange = (event) => {
+        this.setState({ modalDogHeight: event.target.value });
+    }
+    handleColorChange = (event) => {
+        this.setState({ modalDogColor: event.target.value });
+    }
+
     render(){
+        
+
+                
+        
+
         const columns = [
             { field: 'name', headerName: 'Doggo Name', width: 300 },
             { field: 'breed', headerName: 'Breed', width: 300 },
@@ -67,6 +188,7 @@ class PetsDashboard extends React.Component {
             <div>
                 <div className="dashboard" style={{ height: 400, width: '75%' }}>
                     <DataGrid rows={this.state.doggos} columns={columns} pageSize={5} />
+                    <Button variant="contained" color="primary" size="large" onClick={this.modalPrepareAddDog} >Add Dog</Button>
                 </div>
                 <Modal
                     aria-labelledby="transition-modal-title"
@@ -86,30 +208,73 @@ class PetsDashboard extends React.Component {
                             <Table className="table" aria-label="simple table">
                                 <TableHead>
                                 <TableRow>
-                                    <TableCell>{this.state.modalDog.name}</TableCell>
-                                    <TableCell align="right"></TableCell>
+                                    <TableCell>
+                                        <TextField
+                                            label="Name"
+                                            id="outlined-size-normal"                    
+                                            variant="outlined"                                        
+                                            required="true"  
+                                            onChange={this.handleNameChange.bind(this)}      
+                                            value={this.state.modalDogName}            
+                                        />
+                                    </TableCell>
                                 </TableRow>
                                 </TableHead>
                                 <TableBody>
                                     <TableRow>
-                                        <TableCell align="left">Breed:</TableCell>
-                                        <TableCell align="right">{this.state.modalDog.breed}</TableCell>
+                                        <TableCell>
+                                            <TextField
+                                                label="Breed"
+                                                id="outlined-size-normal"                    
+                                                variant="outlined"                                        
+                                                required="true"  
+                                                onChange={this.handleBreedChange.bind(this)}      
+                                                value={this.state.modalDogBreed}            
+                                            />
+                                        </TableCell>                                        
                                     </TableRow>
                                     <TableRow>
-                                        <TableCell align="left">Weight:</TableCell>
-                                        <TableCell align="right">{this.state.modalDog.weight}</TableCell>
+                                        <TableCell>
+                                            <TextField
+                                                label="Weight"
+                                                id="outlined-size-normal"                    
+                                                variant="outlined"                                        
+                                                required="true"  
+                                                type="number"
+                                                onChange={this.handleWeightChange.bind(this)}      
+                                                value={this.state.modalDogWeight}            
+                                            />
+                                        </TableCell>                                        
                                     </TableRow>
                                     <TableRow>
-                                        <TableCell align="left">Height:</TableCell>
-                                        <TableCell align="right">{this.state.modalDog.height}</TableCell>
+                                        <TableCell>
+                                        <TextField
+                                                label="Height"
+                                                id="outlined-size-normal"                    
+                                                variant="outlined"                                        
+                                                required="true"  
+                                                type="number"
+                                                onChange={this.handleHeightChange.bind(this)}      
+                                                value={this.state.modalDogHeight}            
+                                            />
+                                        </TableCell>                                        
                                     </TableRow>
                                     <TableRow>
-                                        <TableCell align="left">Color:</TableCell>
-                                        <TableCell align="right">{this.state.modalDog.color}</TableCell>
+                                        <TableCell>
+                                        <TextField
+                                                label="Color"
+                                                id="outlined-size-normal"                    
+                                                variant="outlined"                                        
+                                                required="true"                                                  
+                                                onChange={this.handleColorChange.bind(this)}      
+                                                value={this.state.modalDogColor}            
+                                            />
+                                        </TableCell>                                        
                                     </TableRow>
                                 </TableBody>
                             </Table>
                         </TableContainer>
+                        <Button variant="contained" color="primary" size="large" onClick={this.saveDoggo}>Save</Button>
                     </div>
                     </Fade>
                 </Modal>

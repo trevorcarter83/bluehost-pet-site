@@ -14,17 +14,43 @@ import TableRow from '@material-ui/core/TableRow';
 import Paper from '@material-ui/core/Paper';
 import TextField from '@material-ui/core/TextField';
 
-//   const rows = [
-//     { id: 1, name: 'Snow', breed: 'Husky', weight: 75, height: 300 ,color: 'white', id2: 1 },
-//     { id: 2, name: 'Maya', breed: 'Retriever', weight: 40, height: 400 ,color: 'gold', id2: 2 },
-//     { id: 3, name: 'Joey', breed: 'Beagle', weight: 50, height: 500 ,color: 'brown', id2: 3 }
-//   ];
+const dbName = "petsDashboard"
+
+if (!window.indexedDB) {
+    window.alert("Your browser doesn't support a stable version of IndexedDB.")
+} 
+
+var petsDB;
+var request = window.indexedDB.open(dbName, 1);
+var allDogs = []; 
+request.onerror = function(event){
+    console.log("error on database connection: " + event.target.errorCode);
+};
+request.onupgradeneeded = function(event){
+    petsDB = request.result;
+    petsDB.createObjectStore("dogs", {keyPath: "id"});
+};
+request.onsuccess = function(event){ 
+    petsDB = request.result;                  
+    var objectStore = petsDB.transaction("dogs").objectStore("dogs");
+    objectStore.openCursor().onsuccess = function(event) {
+        let cursor = event.target.result;
+        if (cursor) {
+            allDogs.push(cursor.value);
+            cursor.continue();
+        }
+        else {
+            console.log("Got all dogs: " + allDogs);
+        }
+    };            
+    
+};
 
 class PetsDashboard extends React.Component {
     constructor(props){
         super(props);
         this.state = {
-            doggos: this.petsDashboardRead(),
+            doggos: allDogs.filter(x => x.username === this.props.user),
             showModal: false,
             modalDogID: 0,
             modalDogName: '',
@@ -34,6 +60,12 @@ class PetsDashboard extends React.Component {
             modalDogColor: '',
         }
     }
+    // componentWillMount() {
+    //     this.setState({
+    //         doggos: this.petsDashboardRead()
+    //     });
+
+    // }
     displayPetDetails = (event,petID) => {
         event.preventDefault();
         let displayDog = this.state.doggos.filter(x => x.id === petID)[0];
@@ -58,21 +90,26 @@ class PetsDashboard extends React.Component {
             modalDogColor: ''
         });
     }
-    petsDashboardRead = () => {
-        debugger
-        let allDogs = [];
-        var objectStore = this.props.db.transaction("dogs").objectStore("dogs");
+    petsDashboardRead = (isForUser = true) => {                   
+        let allDogs = [];                   
+        let objectStore = petsDB.transaction("dogs").objectStore("dogs");
         objectStore.openCursor().onsuccess = function(event) {
-            var cursor = event.target.result;
+            let cursor = event.target.result;
             if (cursor) {
-              allDogs.push(cursor.value);
-              cursor.continue();
+                allDogs.push(cursor.value);
+                cursor.continue();
             }
             else {
-              console.log("Got all dogs: " + allDogs);
+                console.log("Got all dogs: " + allDogs);
             }
-          };
-        return allDogs;
+        };            
+        if(isForUser){
+            return allDogs.filter(x => x.username === this.props.user);
+        }
+        else{
+            return allDogs;
+        }
+        
     }
     handleClose = (e) => {
         e.preventDefault();
@@ -80,16 +117,8 @@ class PetsDashboard extends React.Component {
             showModal: false
         });
     }
-    getIncrementedDogID = () => {
-        if(this.state.doggos.length > 0){
-            return Math.max.apply(Math, this.state.doggos.map(function(obj) { return obj.id; })) + 1;
-        }
-        else{
-            return 1;
-        }            
-    }
     saveDoggo = () => {
-        if(this.state.modalDogID == 0){
+        if(this.state.modalDogID === 0){
             this.addDog();
         }
         else{
@@ -97,26 +126,33 @@ class PetsDashboard extends React.Component {
         }
     }
     addDog = () => {
-        let newID = this.getIncrementedDogID();
+        debugger
+        //const dogList = await this.petsDashboardRead(false);
+        let newID =  allDogs.reduce((p, c) => p.id > c.id ? p : c).id + 1;        
+        let newList = this.state.doggos.slice();
         let newDog = {id: newID, 
                     name: this.state.modalDogName, 
                     breed: this.state.modalDogBreed, 
                     weight: this.state.modalDogWeight, 
                     height: this.state.modalDogHeight,
                     color: this.state.modalDogColor, 
-                    id2: newID}
-        var transaction = this.props.db.transaction(["dogs"], "readwrite");
-        transaction.oncomplete = function(event) {                
-            this.setState({
-                doggos: [...this.state.doggos].push(newDog)
-            })
+                    id2: newID,
+                    username: this.props.user}                  
+        let transaction = petsDB.transaction(["dogs"], "readwrite");
+        transaction.oncomplete = function(event) {                                        
             console.log("Dog has been added.");
         };            
         transaction.onerror = function(event) {
             console.log(event.target.result);
-        };              
-        var objectStore = transaction.objectStore("dogs");            
-        objectStore.add(newDog);
+        }; 
+        newList.push(newDog);
+        allDogs.push(newDog);
+        this.setState({
+            doggos: newList,
+            showModal: false
+        })             
+        let objectStore = transaction.objectStore("dogs");            
+        objectStore.add(newDog);                 
     }
     updateDog = () => {
         let updatedDog = {id: this.state.modalDogID, 
@@ -125,21 +161,24 @@ class PetsDashboard extends React.Component {
                         weight: this.state.modalDogWeight, 
                         height: this.state.modalDogHeight,
                         color: this.state.modalDogColor, 
-                        id2: this.state.modalDogID}
-        var objectStore = this.props.db.transaction(["dogs"], "readwrite").objectStore("dogs");
-        var request = objectStore.put(updatedDog);
+                        id2: this.state.modalDogID,
+                        username: this.props.user}        
+        let newList = this.state.doggos.slice();  
+        let objectStore = petsDB.transaction(["dogs"], "readwrite").objectStore("dogs");
+        let request = objectStore.put(updatedDog);
         request.onerror = function(event) {
             console.log("Dog update failed.");
         };
         request.onsuccess = function(event) {
-            console.log("Dog updated.");                
-            let changedDoggos = [...this.state.doggos];
-            let dogIndex = changedDoggos.map(function(e) {return e.id}).indexOf(updatedDog.id);
-            changedDoggos[dogIndex] = updatedDog;
-            this.setState({
-                doggos: changedDoggos
-            });
-        };
+            console.log("Dog updated.");                            
+        };  
+        let changedDoggos = newList;
+        let dogIndex = changedDoggos.map(function(e) {return e.id}).indexOf(updatedDog.id);
+        changedDoggos[dogIndex] = updatedDog;
+        this.setState({
+            doggos: changedDoggos,
+            showModal: false
+        });         
     }
     handleNameChange = (event) => {
         this.setState({ modalDogName: event.target.value });
@@ -157,12 +196,7 @@ class PetsDashboard extends React.Component {
         this.setState({ modalDogColor: event.target.value });
     }
 
-    render(){
-        
-
-                
-        
-
+    render(){                                
         const columns = [
             { field: 'name', headerName: 'Doggo Name', width: 300 },
             { field: 'breed', headerName: 'Breed', width: 300 },
@@ -187,9 +221,9 @@ class PetsDashboard extends React.Component {
         return(
             <div>
                 <div className="dashboard" style={{ height: 400, width: '75%' }}>
-                    <DataGrid rows={this.state.doggos} columns={columns} pageSize={5} />
-                    <Button variant="contained" color="primary" size="large" onClick={this.modalPrepareAddDog} >Add Dog</Button>
+                    <DataGrid rows={this.state.doggos} columns={columns} pageSize={5} />                    
                 </div>
+                <Button variant="contained" color="primary" size="large" onClick={this.modalPrepareAddDog} >Add Dog</Button>
                 <Modal
                     aria-labelledby="transition-modal-title"
                     aria-describedby="transition-modal-description"

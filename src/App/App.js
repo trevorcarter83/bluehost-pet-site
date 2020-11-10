@@ -21,30 +21,7 @@ class App extends React.Component {
     });
   }
   render(){
-    //prefixes of implementation that we want to test
-    // window.indexedDB = window.indexedDB || window.mozIndexedDB || window.webkitIndexedDB || window.msIndexedDB;
-    // //prefixes of window.idb objects
-    // window.IDBTransaction = window.IDBTransaction || window.webkitIDBTransaction || window.msIDBTransaction;
-    // window.IDBKeyRange = window.IDBKeyRange || window.webkitIDBKeyRange || window.msIDBKeyRange
-    
-    // if (!window.indexedDB) {
-    // window.alert("Your browser doesn't support a stable version of IndexedDB.")
-    // }    
-    debugger
-    const dbName = "petsDashboard"
-    var petsDB;
-    var request = indexedDB.open(dbName, 1);
-
-    request.onerror = function(event){
-        console.log("success: " + event.target.errorCode);
-    };
-    request.onupgradeneeded = function(event){
-        petsDB = event.target.result;
-        var objectStore = petsDB.createObjectStore("dogs", {keyPath: "id"});
-    };
-    request.onsuccess = function(){
-      petsDB = request.result;
-    };    
+        
     let headerText;
     let pageContent;
     /* if the user isn't authenticated, show login component and header*/
@@ -55,7 +32,7 @@ class App extends React.Component {
     /* else render the pets dashboard */
     else{
       headerText = <h1>{this.state.username}'s Pets <PetsIcon fontSize="large" /></h1>;
-      pageContent = <PetsDashboard db={petsDB}/>
+      pageContent = <PetsDashboard user={this.state.username}/>
     }
     
     return (

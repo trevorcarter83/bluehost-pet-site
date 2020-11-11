@@ -1,5 +1,18 @@
 # Blue host pet site using "Create React App"
 
+UPDATE 11/10/2020
+----------------------------------------------------------------
+
+I have made modifications for the following:
+  - The Pets dashboard now has the following abilities:
+    > Dog information is now stored client side using IndexedDB.  IndexedDB was chosen for the ability to scale if the app becomes more heavily used.  The other considered options was storing information through local files or using Web Storage (localStorage) or Session Storage.
+    > The dashboard now pulls/modifies information by who the user was.  Example:  Joe's dogs won't be displayed with Emily's dogs.
+    > The ability to add a dog and to modigy the details of a dog is now available.
+  - Some simple unit testing was added.  It was mainly for the Login component.  There isn't a ton of unit testing in the project. Just enough to prove that I am capable of setting that up.  These test can be run using "npm run test".  I was trying to create some unit tests for the PetsDashboard component, but IndexedDB kinda made it more complex and actually more of a integration test.  We can discuss unit tests further if you would like.
+  - The react version used to be 17, I have down graded it to 16 for better unit testing support.
+
+----------------------------------------------------------------
+
 For the take home exercise, I have developed the following in the required three hour time frame:
   - a functional react app
   - a login page

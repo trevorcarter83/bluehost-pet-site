@@ -16,10 +16,13 @@ import TextField from '@material-ui/core/TextField';
 
 const dbName = "petsDashboard"
 
+//Alerts user if their browser is compatible with stored app data
 if (!window.indexedDB) {
     window.alert("Your browser doesn't support a stable version of IndexedDB.")
 } 
 
+/////////////////////////////////////////////////////////////////
+//Code below sets up IndexedDB
 var petsDB;
 var request = window.indexedDB.open(dbName, 1);
 var allDogs = []; 
@@ -45,6 +48,7 @@ request.onsuccess = function(event){
     };            
     
 };
+/////////////////////////////////////////////////////////////////////
 
 class PetsDashboard extends React.Component {
     constructor(props){
@@ -59,13 +63,7 @@ class PetsDashboard extends React.Component {
             modalDogHeight: 0,
             modalDogColor: '',
         }
-    }
-    // componentWillMount() {
-    //     this.setState({
-    //         doggos: this.petsDashboardRead()
-    //     });
-
-    // }
+    }    
     displayPetDetails = (event,petID) => {
         event.preventDefault();
         let displayDog = this.state.doggos.filter(x => x.id === petID)[0];
@@ -125,9 +123,7 @@ class PetsDashboard extends React.Component {
             this.updateDog();
         }
     }
-    addDog = () => {
-        debugger
-        //const dogList = await this.petsDashboardRead(false);
+    addDog = () => {                
         let newID =  allDogs.reduce((p, c) => p.id > c.id ? p : c).id + 1;        
         let newList = this.state.doggos.slice();
         let newDog = {id: newID, 
@@ -221,9 +217,9 @@ class PetsDashboard extends React.Component {
         return(
             <div>
                 <div className="dashboard" style={{ height: 400, width: '75%' }}>
-                    <DataGrid rows={this.state.doggos} columns={columns} pageSize={5} />                    
-                </div>
                 <Button variant="contained" color="primary" size="large" onClick={this.modalPrepareAddDog} >Add Dog</Button>
+                    <DataGrid rows={this.state.doggos} columns={columns} pageSize={5} />                    
+                </div>                
                 <Modal
                     aria-labelledby="transition-modal-title"
                     aria-describedby="transition-modal-description"
@@ -305,10 +301,14 @@ class PetsDashboard extends React.Component {
                                             />
                                         </TableCell>                                        
                                     </TableRow>
+                                    <TableRow>
+                                        <TableCell align="center">
+                                            <Button variant="contained" color="primary" size="large" onClick={this.saveDoggo}>Save</Button>
+                                        </TableCell>
+                                    </TableRow>
                                 </TableBody>
                             </Table>
                         </TableContainer>
-                        <Button variant="contained" color="primary" size="large" onClick={this.saveDoggo}>Save</Button>
                     </div>
                     </Fade>
                 </Modal>
